@@ -4,7 +4,6 @@ from ypstruct import structure
 class Genetic:
     def __init__(
         self, 
-        cost_func, 
         distances,
         cities,
         start, 
@@ -16,7 +15,6 @@ class Genetic:
         mu = 0.01,
         sigma = 0.1
     ):
-        self.cost_func = cost_func
         self.distances = distances
         self.cities    = cities
         self.start     = start
@@ -38,7 +36,7 @@ class Genetic:
         self.pop = self.best_sol.repeat(self.nbr_pop)
         for i in range(self.nbr_pop):
             self.pop[i].road = self.random_raod([i for i in range(len(distances)) if i != cities.index(self.start)])
-            self.pop[i].cost = cost_func(distances, self.pop[i].road)
+            self.pop[i].cost = self.calculate_distance(self.pop[i].road)
             if self.pop[i].cost < self.best_sol.cost:
                 self.best_sol = self.pop[i].deepcopy()
 
@@ -63,12 +61,12 @@ class Genetic:
                 c1, c2 = self.crossover(p1, p2)
 
                 # Evaluate First Offspring
-                c1.cost = self.cost_func(self.distances, c1.road)
+                c1.cost = self.calculate_distance(c1.road)
                 if c1.cost < self.best_sol.cost:
                     self.best_sol = c1.deepcopy()
 
                 # Evaluate Second Offspring
-                c2.cost = self.cost_func(self.distances, c2.road)
+                c2.cost = self.calculate_distance(c2.road)
                 if c2.cost < self.best_sol.cost:
                     self.best_sol = c2.deepcopy()
 
@@ -117,3 +115,10 @@ class Genetic:
             nodes.remove(nodes[select])
         road.append(self.cities.index(self.start))
         return np.array(road)
+    
+    
+    def calculate_distance(self, road):
+        dist = 0
+        for i in range(len(road) - 1):
+            dist += self.distances[road[i]][road[i+1]]
+        return dist
